@@ -240,11 +240,11 @@ function AuthPage() {
                 size="sm"
                 className="text-xs"
                 onClick={() => {
-                  setLoginInput("DFADMI20260001");
+                  setLoginInput("DFABDU20260001");
                   setPassword("password");
                 }}
               >
-                Admin
+                Abdul
               </Button>
             </div>
           </div>
