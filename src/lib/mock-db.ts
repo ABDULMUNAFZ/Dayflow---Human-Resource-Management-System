@@ -31,8 +31,51 @@ function generateMockAttendance(employeeId: string, daysCount: number) {
 
     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
       const dateStr = d.toISOString().slice(0, 10);
-      const checkInTime = `${dateStr}T09:00:00.000Z`;
-      const checkOutTime = `${dateStr}T18:00:00.000Z`;
+      let status: "present" | "absent" | "half_day" | "leave" = "present";
+      let checkInTime: string | null = `${dateStr}T09:00:00.000Z`;
+      let checkOutTime: string | null = `${dateStr}T18:00:00.000Z`;
+      let workHours = 8;
+      let extraHours = 0;
+
+      if (employeeId === 'e2') {
+        if (count === 4 || count === 11) {
+          status = "leave";
+          checkInTime = null;
+          checkOutTime = null;
+          workHours = 0;
+        } else {
+          const minutes = count % 3 === 0 ? "15" : "02";
+          checkInTime = `${dateStr}T09:${minutes}:00.000Z`;
+        }
+      } else if (employeeId === 'e3') {
+        if (count === 2 || count === 7 || count === 14) {
+          status = "absent";
+          checkInTime = null;
+          checkOutTime = null;
+          workHours = 0;
+        } else if (count === 10) {
+          status = "half_day";
+          checkInTime = `${dateStr}T09:00:00.000Z`;
+          checkOutTime = `${dateStr}T13:00:00.000Z`;
+          workHours = 4;
+        }
+      } else if (employeeId === 'e4') {
+        if (count === 5) {
+          status = "leave";
+          checkInTime = null;
+          checkOutTime = null;
+          workHours = 0;
+        } else if (count === 12) {
+          status = "half_day";
+          checkInTime = `${dateStr}T09:00:00.000Z`;
+          checkOutTime = `${dateStr}T13:15:00.000Z`;
+          workHours = 4.25;
+        } else if (count % 4 === 0) {
+          checkOutTime = `${dateStr}T19:30:00.000Z`;
+          workHours = 9.5;
+          extraHours = 1.5;
+        }
+      }
 
       list.push({
         id: `att-${employeeId}-${dateStr}`,
@@ -40,8 +83,10 @@ function generateMockAttendance(employeeId: string, daysCount: number) {
         work_date: dateStr,
         check_in: checkInTime,
         check_out: checkOutTime,
-        status: "present",
-        created_at: checkInTime,
+        status,
+        work_hours: workHours,
+        extra_hours: extraHours,
+        created_at: checkInTime || `${dateStr}T09:00:00.000Z`,
       });
       count++;
     }
@@ -52,34 +97,124 @@ function generateMockAttendance(employeeId: string, daysCount: number) {
 
 function generateMockLeaveRequests(employeeId: string) {
   const now = new Date();
-  const date1 = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const date2 = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
-  const futureStart = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const futureEnd = new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
+  
+  if (employeeId === 'e1') {
+    return [
+      {
+        id: `leave-e1-1`,
+        employee_id: 'e1',
+        leave_type_id: 'lt3',
+        start_date: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        end_date: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        remarks: "Personal work at home",
+        status: "approved",
+        created_at: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewer_id: 'e1',
+        review_comment: "Approved.",
+        reviewed_at: new Date(now.getTime() - 11 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: `leave-e1-2`,
+        employee_id: 'e1',
+        leave_type_id: 'lt1',
+        start_date: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        end_date: new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        remarks: "Vacation booking",
+        status: "pending",
+        created_at: new Date().toISOString(),
+        reviewer_id: null,
+        review_comment: null,
+        reviewed_at: null,
+      }
+    ];
+  }
+  
+  if (employeeId === 'e2') {
+    return [
+      {
+        id: `leave-e2-1`,
+        employee_id: 'e2',
+        leave_type_id: 'lt2',
+        start_date: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        end_date: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        remarks: "High fever and flu",
+        status: "approved",
+        attachment_url: "medical_certificate.pdf",
+        created_at: new Date(now.getTime() - 16 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewer_id: 'e1',
+        review_comment: "Approved, take care.",
+        reviewed_at: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: `leave-e2-2`,
+        employee_id: 'e2',
+        leave_type_id: 'lt3',
+        start_date: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        end_date: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        remarks: "Attending friend wedding",
+        status: "pending",
+        created_at: new Date().toISOString(),
+        reviewer_id: null,
+        review_comment: null,
+        reviewed_at: null,
+      }
+    ];
+  }
+  
+  if (employeeId === 'e3') {
+    return [
+      {
+        id: `leave-e3-1`,
+        employee_id: 'e3',
+        leave_type_id: 'lt3',
+        start_date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        end_date: new Date(now.getTime() - 9 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        remarks: "Family event",
+        status: "approved",
+        created_at: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewer_id: 'e1',
+        review_comment: "Approved.",
+        reviewed_at: new Date(now.getTime() - 13 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: `leave-e3-2`,
+        employee_id: 'e3',
+        leave_type_id: 'lt2',
+        start_date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        end_date: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        remarks: "Sick leave",
+        status: "rejected",
+        created_at: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewer_id: 'e1',
+        review_comment: "Rejected, medical certificate not uploaded as required.",
+        reviewed_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      }
+    ];
+  }
+  
   return [
     {
-      id: `leave-${employeeId}-1`,
-      employee_id: employeeId,
+      id: `leave-e4-1`,
+      employee_id: 'e4',
       leave_type_id: 'lt1',
-      start_date: date1,
-      end_date: date2,
-      remarks: "Family gathering",
+      start_date: new Date(now.getTime() - 18 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      end_date: new Date(now.getTime() - 16 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      remarks: "Home travel",
       status: "approved",
-      created_at: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date(now.getTime() - 22 * 24 * 60 * 60 * 1000).toISOString(),
       reviewer_id: 'e1',
-      review_comment: "Approved, cover available.",
-      reviewed_at: new Date(now.getTime() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+      review_comment: "Approved.",
+      reviewed_at: new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
-      id: `leave-${employeeId}-2`,
-      employee_id: employeeId,
+      id: `leave-e4-2`,
+      employee_id: 'e4',
       leave_type_id: 'lt2',
-      start_date: futureStart,
-      end_date: futureEnd,
-      remarks: "Dental checkup",
+      start_date: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      end_date: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      remarks: "Medical checkup",
       status: "pending",
+      attachment_url: "prescription.jpg",
       created_at: new Date().toISOString(),
       reviewer_id: null,
       review_comment: null,
