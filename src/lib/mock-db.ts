@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const IS_VERCEL = !!process.env.VERCEL;
+const IS_VERCEL = !!process.env['VERCEL'];
 const BUNDLED_DB_FILE = path.join(process.cwd(), 'mock_db.json');
 const WRITEABLE_DB_FILE = IS_VERCEL ? path.join('/tmp', 'mock_db.json') : BUNDLED_DB_FILE;
 
@@ -16,6 +16,7 @@ export interface MockDb {
   payroll: any[];
   documents: any[];
   audit_logs: any[];
+  salary_configs: any[];
 }
 
 function generateMockAttendance(employeeId: string, daysCount: number) {
@@ -190,6 +191,40 @@ function createDefaultDb(): MockDb {
     ],
     documents: [],
     audit_logs: [],
+    salary_configs: [
+      {
+        id: 'sc1',
+        employee_id: 'e1',
+        wage_type: 'monthly',
+        wage_amount: 120000,
+        working_days_per_week: 5,
+        working_hours_per_day: 8,
+        pf_rate: 12,
+        employer_pf_rate: 12,
+        professional_tax: 200,
+        components: [
+          { id: 'comp-e1-basic', name: 'Basic Salary', type: 'percentage', value: 50, calculation_base_id: 'wage' },
+          { id: 'comp-e1-hra', name: 'House Rent Allowance', type: 'percentage', value: 50, calculation_base_id: 'comp-e1-basic' },
+          { id: 'comp-e1-fixed', name: 'Fixed Allowance', type: 'fixed', value: 30000, calculation_base_id: null },
+        ]
+      },
+      {
+        id: 'sc2',
+        employee_id: 'e2',
+        wage_type: 'monthly',
+        wage_amount: 80000,
+        working_days_per_week: 5,
+        working_hours_per_day: 8,
+        pf_rate: 12,
+        employer_pf_rate: 12,
+        professional_tax: 200,
+        components: [
+          { id: 'comp-e2-basic', name: 'Basic Salary', type: 'percentage', value: 50, calculation_base_id: 'wage' },
+          { id: 'comp-e2-hra', name: 'House Rent Allowance', type: 'percentage', value: 50, calculation_base_id: 'comp-e2-basic' },
+          { id: 'comp-e2-fixed', name: 'Fixed Allowance', type: 'fixed', value: 20000, calculation_base_id: null },
+        ]
+      }
+    ]
   };
 }
 

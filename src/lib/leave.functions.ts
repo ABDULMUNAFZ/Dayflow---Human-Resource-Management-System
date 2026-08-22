@@ -5,10 +5,18 @@ import type { LeaveBalance, LeaveRequest, LeaveType } from "@/lib/types";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
 
-function dayCount(start: string, end: string): number {
-  const s = new Date(`${start}T00:00:00`).getTime();
-  const e = new Date(`${end}T00:00:00`).getTime();
-  return Math.round((e - s) / 86400000) + 1;
+function calculateLeaveDuration(start: string, end: string): number {
+  const cursor = new Date(`${start}T00:00:00`);
+  const last = new Date(`${end}T00:00:00`);
+  let count = 0;
+  while (cursor <= last) {
+    const day = cursor.getDay();
+    if (day !== 0 && day !== 6) { // Exclude Saturday and Sunday
+      count++;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return count;
 }
 
 export const getMyLeave = createServerFn({ method: "GET" })
@@ -39,10 +47,10 @@ export const getMyLeave = createServerFn({ method: "GET" })
       const ofType = mappedRequests.filter((r: any) => r.leave_type_id === t.id && r.start_date >= yearStart);
       const used = ofType
         .filter((r: any) => r.status === "approved")
-        .reduce((sum: number, r: any) => sum + dayCount(r.start_date, r.end_date), 0);
+        .reduce((sum: number, r: any) => sum + calculateLeaveDuration(r.start_date, r.end_date), 0);
       const pending = ofType
         .filter((r: any) => r.status === "pending")
-        .reduce((sum: number, r: any) => sum + dayCount(r.start_date, r.end_date), 0);
+        .reduce((sum: number, r: any) => sum + calculateLeaveDuration(r.start_date, r.end_date), 0);
       return { typeId: t.id, name: t.name, allowance: t.annual_allowance, used, pending };
     });
 
@@ -58,6 +66,7 @@ export const applyLeave = createServerFn({ method: "POST" })
         startDate: dateSchema,
         endDate: dateSchema,
         remarks: z.string().max(500).optional(),
+        attachmentUrl: z.string().optional().nullable(),
       })
       .parse(data),
   )
@@ -69,10 +78,46 @@ export const applyLeave = createServerFn({ method: "POST" })
     if (data.endDate < data.startDate) throw new Error("End date can't be before the start date.");
     const today = new Date().toISOString().slice(0, 10);
     if (data.startDate < today) throw new Error("Leave can't start in the past.");
-    if (dayCount(data.startDate, data.endDate) > 60) throw new Error("Leave requests are limited to 60 days.");
+
+    const duration = calculateLeaveDuration(data.startDate, data.endDate);
+    if (duration <= 0) throw new Error("Leave duration must cover at least one working day (Mon-Fri).");
+    if (duration > 60) throw new Error("Leave requests are limited to 60 days.");
 
     const emp = db.employees.find((e) => e.user_id === userId);
     if (!emp) throw new Error("No employee profile linked to this account.");
+
+    // Overlapping requests check
+    const hasOverlap = db.leave_requests.some((r) => {
+      if (r.employee_id !== emp.id) return false;
+      if (r.status === "rejected") return false;
+      return (data.startDate <= r.end_date && data.endDate >= r.start_date);
+    });
+    if (hasOverlap) {
+      throw new Error("This period overlaps with an existing leave request.");
+    }
+
+    // Leave balance check
+    const type = db.leave_types.find((t) => t.id === data.leaveTypeId);
+    if (!type) throw new Error("Selected leave type not found.");
+
+    // Attachment validation for Sick Leave
+    const isSickLeave = type.name.toLowerCase().includes("sick");
+    if (isSickLeave && !data.attachmentUrl) {
+      throw new Error("Medical certificate attachment is required for sick leave requests.");
+    }
+
+    const yearStart = `${new Date().getFullYear()}-01-01`;
+    const employeeRequests = db.leave_requests.filter((r) => r.employee_id === emp.id && r.leave_type_id === type.id && r.start_date >= yearStart);
+    const used = employeeRequests
+      .filter((r) => r.status === "approved")
+      .reduce((sum, r) => sum + calculateLeaveDuration(r.start_date, r.end_date), 0);
+    const pending = employeeRequests
+      .filter((r) => r.status === "pending")
+      .reduce((sum, r) => sum + calculateLeaveDuration(r.start_date, r.end_date), 0);
+    
+    if (used + pending + duration > type.annual_allowance) {
+      throw new Error(`Insufficient leave balance. You have ${type.annual_allowance - (used + pending)} days remaining.`);
+    }
 
     const crypto = await import("crypto");
     const newRequest = {
@@ -83,6 +128,7 @@ export const applyLeave = createServerFn({ method: "POST" })
       end_date: data.endDate,
       remarks: data.remarks ?? null,
       status: "pending",
+      attachment_url: data.attachmentUrl ?? null,
       created_at: new Date().toISOString(),
       reviewer_id: null,
       review_comment: null,
@@ -98,10 +144,9 @@ export const applyLeave = createServerFn({ method: "POST" })
 
     saveDb(db);
 
-    const type = db.leave_types.find((t) => t.id === data.leaveTypeId);
     return {
       ...newRequest,
-      leave_types: type ? { name: type.name } : null,
+      leave_types: { name: type.name },
     } as any;
   });
 

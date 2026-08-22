@@ -426,3 +426,329 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     saveDb(db);
     return emp;
   });
+
+export const updateEmployeeExtendedInfo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      employeeId: z.string(),
+      full_name: z.string().trim().min(2, "Full name is required"),
+      email: z.string().email("Invalid email"),
+      phone: z.string().trim().optional().nullable(),
+      address: z.string().trim().optional().nullable(),
+      job_title: z.string().trim().min(1, "Job title is required"),
+      department_id: z.string().optional().nullable(),
+      employment_status: z.enum(["active", "on_leave", "inactive"]),
+      joining_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+      company_id: z.string().optional().nullable(),
+      date_of_birth: z.string().optional().nullable(),
+      nationality: z.string().optional().nullable(),
+      personal_email: z.string().optional().nullable(),
+      gender: z.string().optional().nullable(),
+      marital_status: z.string().optional().nullable(),
+      bank_account_no: z.string().optional().nullable(),
+      bank_name: z.string().optional().nullable(),
+      ifsc_code: z.string().optional().nullable(),
+      pan_no: z.string().optional().nullable(),
+      uan_no: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+    
+    const roles = db.user_roles.filter((r) => r.user_id === userId).map((r) => r.role);
+    if (!roles.includes("hr") && !roles.includes("admin")) {
+      throw new Error("Unauthorized: Only HR/Admin can update extended employee information.");
+    }
+    
+    const emp = db.employees.find((e) => e.id === data.employeeId);
+    if (!emp) throw new Error("Employee not found");
+    
+    emp.full_name = data.full_name;
+    emp.email = data.email;
+    emp.phone = data.phone || null;
+    emp.address = data.address || null;
+    emp.job_title = data.job_title;
+    emp.department_id = data.department_id || null;
+    emp.employment_status = data.employment_status;
+    emp.joining_date = data.joining_date;
+    emp.company_id = data.company_id || null;
+    
+    emp.date_of_birth = data.date_of_birth || null;
+    emp.nationality = data.nationality || null;
+    emp.personal_email = data.personal_email || null;
+    emp.gender = data.gender || null;
+    emp.marital_status = data.marital_status || null;
+    emp.bank_account_no = data.bank_account_no || null;
+    emp.bank_name = data.bank_name || null;
+    emp.ifsc_code = data.ifsc_code || null;
+    emp.pan_no = data.pan_no || null;
+    emp.uan_no = data.uan_no || null;
+    
+    saveDb(db);
+    return emp;
+  });
+
+export const updateEmployeeResume = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      employeeId: z.string(),
+      about_summary: z.string().trim().max(1000).optional().nullable(),
+      skills: z.array(z.string()).optional().nullable(),
+      certifications: z.array(z.string()).optional().nullable(),
+    })
+  )
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+    
+    const targetEmp = db.employees.find((e) => e.id === data.employeeId);
+    if (!targetEmp) throw new Error("Employee not found");
+    
+    const roles = db.user_roles.filter((r) => r.user_id === userId).map((r) => r.role);
+    const isSelf = targetEmp.user_id === userId;
+    const isStaff = roles.includes("admin") || roles.includes("hr");
+    
+    if (!isSelf && !isStaff) {
+      throw new Error("Unauthorized to edit this employee's resume.");
+    }
+    
+    targetEmp.about_summary = data.about_summary || null;
+    targetEmp.skills = data.skills || [];
+    targetEmp.certifications = data.certifications || [];
+    
+    saveDb(db);
+    return targetEmp;
+  });
+
+export const changePassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      currentPassword: z.string(),
+      newPassword: z.string().min(6, "Password must be at least 6 characters"),
+      confirmPassword: z.string(),
+    })
+  )
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+    
+    const emp = db.employees.find((e) => e.user_id === userId);
+    if (!emp) throw new Error("Profile not found.");
+    
+    const currentStored = emp.password || "password";
+    if (currentStored !== data.currentPassword) {
+      throw new Error("Incorrect current password.");
+    }
+    
+    if (data.newPassword !== data.confirmPassword) {
+      throw new Error("New passwords do not match.");
+    }
+    
+    emp.password = data.newPassword;
+    emp.needs_password_change = false;
+    
+    saveDb(db);
+    return { ok: true };
+  });
+
+export const getSalaryConfig = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({ employeeId: z.string() }).parse)
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+
+    const roles = db.user_roles.filter((r) => r.user_id === userId).map((r) => r.role);
+    if (!roles.includes("admin")) {
+      throw new Error("Unauthorized: Only Admin can access salary configurations.");
+    }
+
+    let config = db.salary_configs.find((s: any) => s.employee_id === data.employeeId);
+    if (!config) {
+      const crypto = await import("crypto");
+      config = {
+        id: crypto.randomUUID(),
+        employee_id: data.employeeId,
+        wage_type: "monthly",
+        wage_amount: 50000,
+        working_days_per_week: 5,
+        working_hours_per_day: 8,
+        pf_rate: 12,
+        employer_pf_rate: 12,
+        professional_tax: 200,
+        components: [
+          { id: crypto.randomUUID(), name: "Basic Salary", type: "percentage", value: 50, calculation_base_id: "wage" },
+          { id: crypto.randomUUID(), name: "House Rent Allowance", type: "percentage", value: 50, calculation_base_id: "basic" },
+        ],
+      };
+      db.salary_configs.push(config);
+      saveDb(db);
+    }
+    return config;
+  });
+
+export const saveSalaryConfig = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      employeeId: z.string(),
+      wage_type: z.enum(["fixed", "monthly", "yearly"]),
+      wage_amount: z.number().min(0),
+      working_days_per_week: z.number().min(1).max(7),
+      working_hours_per_day: z.number().min(1).max(24),
+      pf_rate: z.number().min(0).max(100),
+      employer_pf_rate: z.number().min(0).max(100),
+      professional_tax: z.number().min(0),
+      components: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string().trim().min(1),
+          type: z.enum(["fixed", "percentage"]),
+          value: z.number().min(0),
+          calculation_base_id: z.string().nullable(),
+        })
+      ),
+    })
+  )
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+
+    const roles = db.user_roles.filter((r) => r.user_id === userId).map((r) => r.role);
+    if (!roles.includes("admin")) {
+      throw new Error("Unauthorized: Only Admin can update salary configurations.");
+    }
+
+    const components = data.components;
+    const map = new Map(components.map((c) => [c.id, c.calculation_base_id]));
+    
+    const hasCycle = (id: string, visited: Set<string>, stack: Set<string>): boolean => {
+      if (stack.has(id)) return true;
+      if (visited.has(id)) return false;
+      visited.add(id);
+      stack.add(id);
+      const base = map.get(id);
+      if (base && base !== "wage" && base !== "basic") {
+        if (hasCycle(base, visited, stack)) return true;
+      }
+      stack.delete(id);
+      return false;
+    };
+
+    for (const c of components) {
+      if (hasCycle(c.id, new Set(), new Set())) {
+        throw new Error(`Circular dependency detected in component "${c.name}".`);
+      }
+    }
+
+    let config = db.salary_configs.find((s: any) => s.employee_id === data.employeeId);
+    if (config) {
+      config.wage_type = data.wage_type;
+      config.wage_amount = data.wage_amount;
+      config.working_days_per_week = data.working_days_per_week;
+      config.working_hours_per_day = data.working_hours_per_day;
+      config.pf_rate = data.pf_rate;
+      config.employer_pf_rate = data.employer_pf_rate;
+      config.professional_tax = data.professional_tax;
+      config.components = data.components;
+    } else {
+      const crypto = await import("crypto");
+      config = {
+        id: crypto.randomUUID(),
+        employee_id: data.employeeId,
+        wage_type: data.wage_type,
+        wage_amount: data.wage_amount,
+        working_days_per_week: data.working_days_per_week,
+        working_hours_per_day: data.working_hours_per_day,
+        pf_rate: data.pf_rate,
+        employer_pf_rate: data.employer_pf_rate,
+        professional_tax: data.professional_tax,
+        components: data.components,
+      };
+      db.salary_configs.push(config);
+    }
+
+    saveDb(db);
+    return config;
+  });
+
+export interface ComponentResult {
+  id: string;
+  name: string;
+  type: "fixed" | "percentage";
+  value: number;
+  calculation_base_id: string | null;
+  calculated_amount: number;
+}
+
+export function calculateSalaryComponents(
+  wageAmount: number,
+  components: { id: string; name: string; type: "fixed" | "percentage"; value: number; calculation_base_id: string | null }[]
+): ComponentResult[] {
+  const results: ComponentResult[] = [];
+  const compMap = new Map<string, number>();
+
+  const getAmountForId = (id: string | null): number => {
+    if (!id || id === "wage") return wageAmount;
+    if (id === "basic") {
+      const basic = results.find((r) => r.name.toLowerCase().includes("basic"));
+      return basic ? basic.calculated_amount : wageAmount;
+    }
+    return compMap.get(id) ?? 0;
+  };
+
+  const resolved = new Set<string>();
+  const resolving = new Set<string>();
+
+  const resolve = (c: typeof components[0]) => {
+    if (resolved.has(c.id)) return;
+    if (resolving.has(c.id)) throw new Error("Circular dependency!");
+    resolving.add(c.id);
+
+    const baseId = c.calculation_base_id;
+    if (baseId && baseId !== "wage" && baseId !== "basic") {
+      const parent = components.find((p) => p.id === baseId);
+      if (parent) {
+        resolve(parent);
+      }
+    }
+
+    const baseAmount = getAmountForId(baseId);
+    let amount = 0;
+    if (c.type === "fixed") {
+      amount = c.value;
+    } else {
+      amount = (c.value / 100) * baseAmount;
+    }
+
+    compMap.set(c.id, amount);
+    results.push({
+      ...c,
+      calculated_amount: amount,
+    });
+    resolved.add(c.id);
+    resolving.delete(c.id);
+  };
+
+  for (const c of components) {
+    try {
+      resolve(c);
+    } catch (e) {
+      results.push({
+        ...c,
+        calculated_amount: 0,
+      });
+    }
+  }
+
+  return results;
+}

@@ -53,6 +53,8 @@ export const checkIn = createServerFn({ method: "POST" })
       check_in: now,
       check_out: null,
       status: "present" as AttendanceStatus,
+      work_hours: 0,
+      extra_hours: 0,
       created_at: now,
     };
 
@@ -91,18 +93,33 @@ export const checkOut = createServerFn({ method: "POST" })
     if (!existing?.check_in) throw new Error("You need to check in before checking out.");
     if (existing.check_out) throw new Error("You're already checked out for today.");
 
-    const now = new Date();
-    const workedMs = now.getTime() - new Date(existing.check_in).getTime();
-    const status: AttendanceStatus = workedMs >= 4 * 60 * 60 * 1000 ? "present" : "half_day";
+    const sc = db.salary_configs?.find((s: any) => s.employee_id === emp.id);
+    const standardHours = sc?.working_hours_per_day || 8;
 
-    existing.check_out = now.toISOString();
+    const checkoutTime = new Date();
+    const checkinTime = new Date(existing.check_in);
+    const workedMs = checkoutTime.getTime() - checkinTime.getTime();
+    const workHours = Math.round((workedMs / 3600000) * 100) / 100;
+
+    let status: AttendanceStatus = "present";
+    if (workHours < (standardHours / 2)) {
+      status = "absent";
+    } else if (workHours < standardHours) {
+      status = "half_day";
+    }
+
+    const extraHours = Math.max(0, Math.round((workHours - standardHours) * 100) / 100);
+
+    existing.check_out = checkoutTime.toISOString();
     existing.status = status;
+    existing.work_hours = workHours;
+    existing.extra_hours = extraHours;
 
     const crypto = await import("crypto");
     db.audit_logs.push({
       id: crypto.randomUUID(),
       action: "check_out",
-      created_at: now.toISOString(),
+      created_at: checkoutTime.toISOString(),
     });
 
     saveDb(db);

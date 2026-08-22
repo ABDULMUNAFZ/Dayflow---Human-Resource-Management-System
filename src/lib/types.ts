@@ -47,6 +47,24 @@ export interface Employee {
   updated_at: string;
   departments?: { name: string } | null;
   manager?: { full_name: string } | null;
+  // Resume info
+  about_summary?: string | null;
+  skills?: string[] | null;
+  certifications?: string[] | null;
+  // Private info
+  date_of_birth?: string | null;
+  nationality?: string | null;
+  personal_email?: string | null;
+  gender?: string | null;
+  marital_status?: string | null;
+  // Bank details
+  bank_account_no?: string | null;
+  bank_name?: string | null;
+  ifsc_code?: string | null;
+  pan_no?: string | null;
+  uan_no?: string | null;
+  // Credentials
+  password?: string | null;
 }
 
 export interface EmployeeWithToday extends Employee {
@@ -63,6 +81,8 @@ export interface Attendance {
   check_in: string | null;
   check_out: string | null;
   status: AttendanceStatus;
+  work_hours?: number;
+  extra_hours?: number;
 }
 
 export interface LeaveRequest {
@@ -77,6 +97,7 @@ export interface LeaveRequest {
   review_comment: string | null;
   reviewed_at: string | null;
   created_at: string;
+  attachment_url?: string | null;
   leave_types?: { name: string } | null;
   employees?: Pick<Employee, "full_name" | "employee_code" | "job_title" | "avatar_url"> | null;
   reviewer?: { full_name: string } | null;
@@ -93,6 +114,37 @@ export interface Payroll {
   pay_date: string | null;
   status: PayrollStatus;
   employees?: Pick<Employee, "full_name" | "employee_code" | "job_title"> | null;
+  // Auditing & Calculation Breakdown
+  working_days?: number;
+  present_days?: number;
+  paid_leaves?: number;
+  unpaid_leaves?: number;
+  absent_days?: number;
+  half_days?: number;
+  payable_days?: number;
+  salary_basis?: number;
+  adjustments?: number;
+}
+
+export interface SalaryComponent {
+  id: string;
+  name: string;
+  type: "fixed" | "percentage";
+  value: number;
+  calculation_base_id: string | null; // ID of the parent component, or 'wage'
+}
+
+export interface SalaryConfig {
+  id: string;
+  employee_id: string;
+  wage_type: "fixed" | "monthly" | "yearly";
+  wage_amount: number;
+  working_days_per_week: number;
+  working_hours_per_day: number;
+  pf_rate: number;
+  employer_pf_rate: number;
+  professional_tax: number;
+  components: SalaryComponent[];
 }
 
 export interface SalaryHistory {
