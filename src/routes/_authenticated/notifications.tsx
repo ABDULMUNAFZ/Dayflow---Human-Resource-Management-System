@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Bell, CalendarOff, Check, Info, Wallet } from "lucide-react";
+import { Bell, CalendarOff, Check, Info, Wallet, type LucideIcon } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PageLoader, Reveal } from "@/components/ui/bits";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotificationsPage,
 });
 
-const typeIcon = { leave: CalendarOff, payroll: Wallet, info: Info } as const;
+const typeIcon: Record<string, LucideIcon> = { leave: CalendarOff, payroll: Wallet, info: Info };
 
 function NotificationsPage() {
   const { session, isLoading: sessionLoading } = useSession();

@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search) => ({ redirect: (search.redirect as string) || "/dashboard" }),
+  validateSearch: (search) => ({ redirect: (search["redirect"] as string) || undefined }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (data.user) throw redirect({ to: "/dashboard" });
@@ -64,7 +64,7 @@ function AuthPage() {
   const [loading, setLoading] = useState<null | "in" | "up" | "google">(null);
 
   const afterAuth = () => {
-    const safe = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/dashboard";
+    const safe = redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/dashboard";
     navigate({ to: safe, replace: true });
   };
 
