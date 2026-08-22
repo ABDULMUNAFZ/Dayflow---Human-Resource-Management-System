@@ -203,9 +203,9 @@ function ProfilePage() {
       toast.error("Component name is required.");
       return;
     }
-    const crypto = window.crypto || require("crypto");
+    const compId = "comp-" + Math.random().toString(36).substring(2, 15);
     const newComp = {
-      id: crypto.randomUUID(),
+      id: compId,
       name: newCompName.trim(),
       type: newCompType,
       value: newCompValue,

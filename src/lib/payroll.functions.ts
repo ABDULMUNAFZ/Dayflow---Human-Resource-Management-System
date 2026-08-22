@@ -3,6 +3,10 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Payroll, SalaryHistory } from "@/lib/types";
 
+function generateUUID(): string {
+  return "pr-" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 function getWorkingDaysInMonth(year: number, month: number): string[] {
   const dates: string[] = [];
   const numDays = new Date(year, month, 0).getDate();
@@ -143,9 +147,8 @@ export const getPayrollOverview = createServerFn({ method: "GET" })
       // Update payroll record
       let pr = db.payroll.find((p) => p.employee_id === emp.id && p.period === period);
       if (!pr) {
-        const crypto = require("crypto");
         pr = {
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           employee_id: emp.id,
           period,
           base_salary: baseSalary,
@@ -227,8 +230,6 @@ export const updateSalary = createServerFn({ method: "POST" })
     let existing = db.payroll.find((p) => p.employee_id === data.employeeId && p.period === period);
     const net = data.baseSalary + data.allowances - data.deductions;
 
-    const crypto = await import("crypto");
-
     if (existing) {
       existing.base_salary = data.baseSalary;
       existing.allowances = data.allowances;
@@ -236,7 +237,7 @@ export const updateSalary = createServerFn({ method: "POST" })
       existing.net_salary = net;
     } else {
       existing = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         employee_id: data.employeeId,
         period,
         base_salary: data.baseSalary,
@@ -251,7 +252,7 @@ export const updateSalary = createServerFn({ method: "POST" })
 
     if (!(db as any).salary_history) (db as any).salary_history = [];
     (db as any).salary_history.push({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       employee_id: data.employeeId,
       base_salary: data.baseSalary,
       allowances: data.allowances,
