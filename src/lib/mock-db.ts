@@ -16,72 +16,198 @@ export interface MockDb {
   audit_logs: any[];
 }
 
-const DEFAULT_DB: MockDb = {
-  companies: [
-    { id: 'c1', name: 'Dayflow', prefix: 'DF' },
-    { id: 'c2', name: 'OpenAI', prefix: 'OI' },
-    { id: 'c3', name: 'Google', prefix: 'GO' },
-  ],
-  departments: [
-    { id: 'd1', name: 'Engineering', description: 'Product & Engineering' },
-    { id: 'd2', name: 'Human Resources', description: 'HR & People Operations' },
-    { id: 'd3', name: 'Sales & Marketing', description: 'Sales & Marketing Operations' },
-  ],
-  leave_types: [
-    { id: 'lt1', name: 'Annual Leave', annual_allowance: 20 },
-    { id: 'lt2', name: 'Sick Leave', annual_allowance: 10 },
-    { id: 'lt3', name: 'Casual Leave', annual_allowance: 7 },
-  ],
-  employees: [
+function generateMockAttendance(employeeId: string, daysCount: number) {
+  const list: any[] = [];
+  const now = new Date();
+  let count = 0;
+  let offsetDays = 1;
+
+  while (count < daysCount) {
+    const d = new Date(now.getTime() - offsetDays * 24 * 60 * 60 * 1000);
+    const dayOfWeek = d.getDay();
+
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      const dateStr = d.toISOString().slice(0, 10);
+      const checkInTime = `${dateStr}T09:00:00.000Z`;
+      const checkOutTime = `${dateStr}T18:00:00.000Z`;
+
+      list.push({
+        id: `att-${employeeId}-${dateStr}`,
+        employee_id: employeeId,
+        work_date: dateStr,
+        check_in: checkInTime,
+        check_out: checkOutTime,
+        status: "present",
+        created_at: checkInTime,
+      });
+      count++;
+    }
+    offsetDays++;
+  }
+  return list;
+}
+
+function generateMockLeaveRequests(employeeId: string) {
+  const now = new Date();
+  const date1 = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const date2 = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  const futureStart = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const futureEnd = new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  return [
     {
-      id: 'e1',
-      user_id: '00000000-0000-0000-0000-000000000001',
-      employee_code: 'DFAD20260001',
-      full_name: 'Admin User',
-      email: 'admin@dayflow.com',
-      job_title: 'HR Director',
-      joining_date: '2026-01-01',
-      company_id: 'c1',
-      company: 'Dayflow',
-      department_id: 'd2',
-      needs_password_change: false,
-      employment_status: 'active',
+      id: `leave-${employeeId}-1`,
+      employee_id: employeeId,
+      leave_type_id: 'lt1',
+      start_date: date1,
+      end_date: date2,
+      remarks: "Family gathering",
+      status: "approved",
+      created_at: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      reviewer_id: 'e1',
+      review_comment: "Approved, cover available.",
+      reviewed_at: new Date(now.getTime() - 9 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
-      id: 'e2',
-      user_id: '00000000-0000-0000-0000-000000000002',
-      employee_code: 'DFEM20260001',
-      full_name: 'John Doe',
-      email: 'john@dayflow.com',
-      job_title: 'Software Engineer',
-      joining_date: '2026-01-15',
-      company_id: 'c1',
-      company: 'Dayflow',
-      department_id: 'd1',
-      needs_password_change: false,
-      employment_status: 'active',
+      id: `leave-${employeeId}-2`,
+      employee_id: employeeId,
+      leave_type_id: 'lt2',
+      start_date: futureStart,
+      end_date: futureEnd,
+      remarks: "Dental checkup",
+      status: "pending",
+      created_at: new Date().toISOString(),
+      reviewer_id: null,
+      review_comment: null,
+      reviewed_at: null,
     }
-  ],
-  user_roles: [
-    { user_id: '00000000-0000-0000-0000-000000000001', role: 'admin' },
-    { user_id: '00000000-0000-0000-0000-000000000002', role: 'employee' },
-  ],
-  attendance: [],
-  leave_requests: [],
-  payroll: [],
-  documents: [],
-  audit_logs: [],
-};
+  ];
+}
+
+function generateMockPayroll(employeeId: string, base: number, allowances: number, deductions: number) {
+  const now = new Date();
+  const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
+  const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
+  const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const previousPeriod = `${prevYear}-${String(prevMonth).padStart(2, "0")}-01`;
+
+  const net = base + allowances - deductions;
+
+  return [
+    {
+      id: `pay-${employeeId}-prev`,
+      employee_id: employeeId,
+      period: previousPeriod,
+      base_salary: base,
+      allowances: allowances,
+      deductions: deductions,
+      net_salary: net,
+      status: "paid",
+      pay_date: `${prevYear}-${String(prevMonth).padStart(2, "0")}-28`,
+      created_at: new Date(prevYear, prevMonth - 1, 25).toISOString(),
+    },
+    {
+      id: `pay-${employeeId}-curr`,
+      employee_id: employeeId,
+      period: currentPeriod,
+      base_salary: base,
+      allowances: allowances,
+      deductions: deductions,
+      net_salary: net,
+      status: "pending",
+      pay_date: null,
+      created_at: new Date().toISOString(),
+    }
+  ];
+}
+
+function createDefaultDb(): MockDb {
+  return {
+    companies: [
+      { id: 'c1', name: 'Dayflow', prefix: 'DF' },
+      { id: 'c2', name: 'OpenAI', prefix: 'OI' },
+      { id: 'c3', name: 'Google', prefix: 'GO' },
+    ],
+    departments: [
+      { id: 'd1', name: 'Engineering', description: 'Product & Engineering' },
+      { id: 'd2', name: 'Human Resources', description: 'HR & People Operations' },
+      { id: 'd3', name: 'Sales & Marketing', description: 'Sales & Marketing Operations' },
+    ],
+    leave_types: [
+      { id: 'lt1', name: 'Annual Leave', annual_allowance: 20 },
+      { id: 'lt2', name: 'Sick Leave', annual_allowance: 10 },
+      { id: 'lt3', name: 'Casual Leave', annual_allowance: 7 },
+    ],
+    employees: [
+      {
+        id: 'e1',
+        user_id: '00000000-0000-0000-0000-000000000001',
+        employee_code: 'DFAD20260001',
+        full_name: 'Admin User',
+        email: 'admin@dayflow.com',
+        job_title: 'HR Director',
+        joining_date: '2026-01-01',
+        company_id: 'c1',
+        company: 'Dayflow',
+        department_id: 'd2',
+        needs_password_change: false,
+        employment_status: 'active',
+      },
+      {
+        id: 'e2',
+        user_id: '00000000-0000-0000-0000-000000000002',
+        employee_code: 'DFEM20260001',
+        full_name: 'John Doe',
+        email: 'john@dayflow.com',
+        job_title: 'Software Engineer',
+        joining_date: '2026-01-15',
+        company_id: 'c1',
+        company: 'Dayflow',
+        department_id: 'd1',
+        needs_password_change: false,
+        employment_status: 'active',
+      }
+    ],
+    user_roles: [
+      { user_id: '00000000-0000-0000-0000-000000000001', role: 'admin' },
+      { user_id: '00000000-0000-0000-0000-000000000002', role: 'employee' },
+    ],
+    attendance: [
+      ...generateMockAttendance('e1', 20),
+      ...generateMockAttendance('e2', 20),
+    ],
+    leave_requests: [
+      ...generateMockLeaveRequests('e1'),
+      ...generateMockLeaveRequests('e2'),
+    ],
+    payroll: [
+      ...generateMockPayroll('e1', 120000, 15000, 5000),
+      ...generateMockPayroll('e2', 80000, 10000, 4000),
+    ],
+    documents: [],
+    audit_logs: [],
+  };
+}
 
 export function getDb(): MockDb {
   if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2));
-    return DEFAULT_DB;
+    const db = createDefaultDb();
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    return db;
   }
   try {
-    return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    if (!data.attendance || data.attendance.length === 0) {
+      const db = createDefaultDb();
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+      return db;
+    }
+    return data;
   } catch (e) {
-    return DEFAULT_DB;
+    const db = createDefaultDb();
+    return db;
   }
 }
 
