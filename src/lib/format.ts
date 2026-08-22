@@ -61,6 +61,19 @@ export function formatDuration(ms: number): string {
   return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m`;
 }
 
+export function workDurationMs(checkIn: string | null | undefined, checkOut: string | null | undefined): number {
+  if (!checkIn || !checkOut) return 0;
+  return Math.max(0, new Date(checkOut).getTime() - new Date(checkIn).getTime());
+}
+
+export function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 5) return "Working late";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export function initials(name: string): string {
   return name
     .split(" ")
