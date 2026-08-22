@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -32,8 +33,8 @@ export function StatusPill({
   className,
 }: {
   children: React.ReactNode;
-  variant?: keyof typeof pillVariants;
-  className?: string;
+  variant?: (keyof typeof pillVariants) | undefined;
+  className?: string | undefined;
 }) {
   return (
     <span
@@ -133,7 +134,7 @@ export function Reveal({
   );
 }
 
-export function AnimatedNumber({ value, format }: { value: number; format?: (n: number) => string }) {
+export function AnimatedNumber({ value, format }: { value: number; format?: ((n: number) => string) | undefined }) {
   const [display, setDisplay] = useState(value);
   useEffect(() => {
     let frame: number;
@@ -151,5 +152,3 @@ export function AnimatedNumber({ value, format }: { value: number; format?: (n: 
   }, [value]);
   return <span className="font-data tabular-nums">{format ? format(display) : Math.round(display).toLocaleString()}</span>;
 }
-
-import { useEffect, useState } from "react";

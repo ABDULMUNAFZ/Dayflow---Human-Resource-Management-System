@@ -9,7 +9,7 @@ export type ReportType = "attendance" | "leave" | "payroll" | "employees";
 export interface ReportResult {
   type: ReportType;
   headers: string[];
-  rows: unknown[][];
+  rows: (string | number)[][];
   generatedAt: string;
 }
 
@@ -50,7 +50,7 @@ export const getReport = createServerFn({ method: "GET" })
             employee_code: string;
             departments: { name: string } | null;
           } | null;
-          return [r.work_date, e?.full_name, e?.employee_code, e?.departments?.name ?? "", r.status, r.check_in ?? "", r.check_out ?? ""];
+          return [r.work_date, e?.full_name ?? "", e?.employee_code ?? "", e?.departments?.name ?? "", r.status, r.check_in ?? "", r.check_out ?? ""];
         }),
         generatedAt,
       };
@@ -70,7 +70,7 @@ export const getReport = createServerFn({ method: "GET" })
         rows: (rows ?? []).map((r) => {
           const e = r.employees as unknown as { full_name: string; employee_code: string } | null;
           const t = r.leave_types as unknown as { name: string } | null;
-          return [e?.full_name, e?.employee_code, t?.name, r.start_date, r.end_date, r.status, r.remarks ?? "", r.created_at];
+          return [e?.full_name ?? "", e?.employee_code ?? "", t?.name ?? "", r.start_date, r.end_date, r.status, r.remarks ?? "", r.created_at];
         }),
         generatedAt,
       };
@@ -89,7 +89,7 @@ export const getReport = createServerFn({ method: "GET" })
         headers: ["Employee", "Code", "Period", "Base", "Allowances", "Deductions", "Net", "Status"],
         rows: (rows ?? []).map((r) => {
           const e = r.employees as unknown as { full_name: string; employee_code: string } | null;
-          return [e?.full_name, e?.employee_code, r.period, r.base_salary, r.allowances, r.deductions, r.net_salary, r.status];
+          return [e?.full_name ?? "", e?.employee_code ?? "", r.period ?? "", r.base_salary ?? 0, r.allowances ?? 0, r.deductions ?? 0, r.net_salary ?? 0, r.status ?? ""];
         }),
         generatedAt,
       };

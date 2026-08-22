@@ -118,7 +118,7 @@ export interface AuditLog {
   action: string;
   entity: string;
   entity_id: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null>;
   created_at: string;
 }
 

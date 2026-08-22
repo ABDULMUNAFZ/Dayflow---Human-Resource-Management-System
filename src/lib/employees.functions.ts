@@ -165,7 +165,16 @@ export const updateEmployee = createServerFn({ method: "POST" })
     const isStaff = (roles ?? []).some((r) => r.role === "hr" || r.role === "admin");
     if (!isStaff) throw new Error("Only HR or Admin can edit employee records.");
 
-    const { id, ...fields } = data;
+    const { id } = data;
+    const fields = {
+      full_name: data.full_name,
+      phone: data.phone ?? null,
+      address: data.address ?? null,
+      job_title: data.job_title,
+      department_id: data.department_id,
+      manager_id: data.manager_id,
+      employment_status: data.employment_status,
+    };
     const { data: row, error } = await supabase
       .from("employees")
       .update(fields)

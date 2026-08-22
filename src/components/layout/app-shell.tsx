@@ -78,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const isStaff = session.role === "admin" || session.role === "hr";
+  const isStaff = session?.role === "admin" || session?.role === "hr";
   const navItems = NAV.filter((n) => !n.staffOnly || isStaff);
 
   const { data: notifData } = useQuery({
@@ -101,6 +101,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const pathname = router.state.location.pathname;
   const crumbs = useMemo(() => pathname.split("/").filter(Boolean), [pathname]);
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+      </div>
+    );
+  }
 
   const initials = (session.profile?.full_name ?? session.user.email ?? "D F")
     .split(" ")
