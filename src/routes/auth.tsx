@@ -204,47 +204,47 @@ function AuthPage() {
                 size="sm"
                 className="text-xs"
                 onClick={() => {
-                  setLoginInput("DFAD20260001");
-                  setPassword("password");
-                }}
-              >
-                Admin User
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => {
-                  setLoginInput("DFEM20260001");
-                  setPassword("password");
-                }}
-              >
-                John Doe
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => {
-                  setLoginInput("DFJOHN20260001");
-                  setPassword("password");
-                }}
-              >
-                John
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => {
                   setLoginInput("DFABDU20260001");
                   setPassword("password");
                 }}
               >
-                Abdul
+                Abdul (Admin)
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  setLoginInput("DFKOWS20260001");
+                  setPassword("password");
+                }}
+              >
+                Kowshika
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  setLoginInput("DFPRAT20260001");
+                  setPassword("password");
+                }}
+              >
+                Prathiksha
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  setLoginInput("DFPRAB20260001");
+                  setPassword("password");
+                }}
+              >
+                Prabanch
               </Button>
             </div>
           </div>

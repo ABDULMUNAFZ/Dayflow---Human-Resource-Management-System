@@ -54,9 +54,9 @@
     {
       "id": "e1",
       "user_id": "00000000-0000-0000-0000-000000000001",
-      "employee_code": "DFAD20260001",
-      "full_name": "Admin User",
-      "email": "admin@dayflow.com",
+      "employee_code": "DFABDU20260001",
+      "full_name": "Abdul",
+      "email": "abdul@dayflow.com",
       "job_title": "HR Director",
       "joining_date": "2026-01-01",
       "company_id": "c1",
@@ -68,9 +68,9 @@
     {
       "id": "e2",
       "user_id": "00000000-0000-0000-0000-000000000002",
-      "employee_code": "DFEM20260001",
-      "full_name": "John Doe",
-      "email": "john@dayflow.com",
+      "employee_code": "DFKOWS20260001",
+      "full_name": "Kowshika",
+      "email": "kowshika@dayflow.com",
       "job_title": "Software Engineer",
       "joining_date": "2026-01-15",
       "company_id": "c1",
@@ -80,13 +80,13 @@
       "employment_status": "active"
     },
     {
-      "id": "f31e86ca-86d1-4bc6-b7c5-46abe4c5ba76",
-      "user_id": "9dc31c1e-6b33-4090-8dd6-367f54bde4e4",
-      "employee_code": "DFJOHN20260001",
-      "full_name": "John",
-      "email": "john@dayflow.com",
+      "id": "e3",
+      "user_id": "00000000-0000-0000-0000-000000000003",
+      "employee_code": "DFPRAT20260001",
+      "full_name": "Prathiksha",
+      "email": "prathiksha@dayflow.com",
       "job_title": "Software Engineer",
-      "joining_date": "2026-08-22",
+      "joining_date": "2026-02-01",
       "company_id": "c1",
       "company": "Dayflow",
       "department_id": "d1",
@@ -94,13 +94,13 @@
       "employment_status": "active"
     },
     {
-      "id": "181b76df-2845-4fd1-a4ed-2965eb8adde3",
-      "user_id": "c934fca2-b408-4728-8941-033d94603eb8",
-      "employee_code": "DFABDU20260001",
-      "full_name": "Abdul",
-      "email": "abdul@dayflow.com",
-      "job_title": "System Administrator",
-      "joining_date": "2026-08-22",
+      "id": "e4",
+      "user_id": "00000000-0000-0000-0000-000000000004",
+      "employee_code": "DFPRAB20260001",
+      "full_name": "Prabanch",
+      "email": "prabanch@dayflow.com",
+      "job_title": "Software Engineer",
+      "joining_date": "2026-02-15",
       "company_id": "c1",
       "company": "Dayflow",
       "department_id": "d1",
@@ -118,12 +118,12 @@
       "role": "employee"
     },
     {
-      "user_id": "9dc31c1e-6b33-4090-8dd6-367f54bde4e4",
+      "user_id": "00000000-0000-0000-0000-000000000003",
       "role": "employee"
     },
     {
-      "user_id": "c934fca2-b408-4728-8941-033d94603eb8",
-      "role": "admin"
+      "user_id": "00000000-0000-0000-0000-000000000004",
+      "role": "employee"
     }
   ],
   "attendance": [
@@ -488,15 +488,364 @@
       "created_at": "2026-07-27T09:00:00.000Z"
     },
     {
-      "id": "8d0fe0d9-6e2e-4d07-9560-bf896cc24755",
-      "employee_id": "e2",
-      "work_date": "2026-08-22",
-      "check_in": "2026-08-22T12:00:10.257Z",
-      "check_out": null,
+      "id": "att-e3-2026-08-21",
+      "employee_id": "e3",
+      "work_date": "2026-08-21",
+      "check_in": "2026-08-21T09:00:00.000Z",
+      "check_out": "2026-08-21T18:00:00.000Z",
       "status": "present",
-      "work_hours": 0,
-      "extra_hours": 0,
-      "created_at": "2026-08-22T12:00:10.257Z"
+      "created_at": "2026-08-21T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-20",
+      "employee_id": "e3",
+      "work_date": "2026-08-20",
+      "check_in": "2026-08-20T09:00:00.000Z",
+      "check_out": "2026-08-20T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-20T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-19",
+      "employee_id": "e3",
+      "work_date": "2026-08-19",
+      "check_in": "2026-08-19T09:00:00.000Z",
+      "check_out": "2026-08-19T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-19T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-18",
+      "employee_id": "e3",
+      "work_date": "2026-08-18",
+      "check_in": "2026-08-18T09:00:00.000Z",
+      "check_out": "2026-08-18T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-18T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-17",
+      "employee_id": "e3",
+      "work_date": "2026-08-17",
+      "check_in": "2026-08-17T09:00:00.000Z",
+      "check_out": "2026-08-17T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-17T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-14",
+      "employee_id": "e3",
+      "work_date": "2026-08-14",
+      "check_in": "2026-08-14T09:00:00.000Z",
+      "check_out": "2026-08-14T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-14T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-13",
+      "employee_id": "e3",
+      "work_date": "2026-08-13",
+      "check_in": "2026-08-13T09:00:00.000Z",
+      "check_out": "2026-08-13T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-13T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-12",
+      "employee_id": "e3",
+      "work_date": "2026-08-12",
+      "check_in": "2026-08-12T09:00:00.000Z",
+      "check_out": "2026-08-12T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-12T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-11",
+      "employee_id": "e3",
+      "work_date": "2026-08-11",
+      "check_in": "2026-08-11T09:00:00.000Z",
+      "check_out": "2026-08-11T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-11T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-10",
+      "employee_id": "e3",
+      "work_date": "2026-08-10",
+      "check_in": "2026-08-10T09:00:00.000Z",
+      "check_out": "2026-08-10T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-10T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-07",
+      "employee_id": "e3",
+      "work_date": "2026-08-07",
+      "check_in": "2026-08-07T09:00:00.000Z",
+      "check_out": "2026-08-07T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-07T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-06",
+      "employee_id": "e3",
+      "work_date": "2026-08-06",
+      "check_in": "2026-08-06T09:00:00.000Z",
+      "check_out": "2026-08-06T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-06T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-05",
+      "employee_id": "e3",
+      "work_date": "2026-08-05",
+      "check_in": "2026-08-05T09:00:00.000Z",
+      "check_out": "2026-08-05T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-05T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-04",
+      "employee_id": "e3",
+      "work_date": "2026-08-04",
+      "check_in": "2026-08-04T09:00:00.000Z",
+      "check_out": "2026-08-04T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-04T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-08-03",
+      "employee_id": "e3",
+      "work_date": "2026-08-03",
+      "check_in": "2026-08-03T09:00:00.000Z",
+      "check_out": "2026-08-03T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-03T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-07-31",
+      "employee_id": "e3",
+      "work_date": "2026-07-31",
+      "check_in": "2026-07-31T09:00:00.000Z",
+      "check_out": "2026-07-31T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-31T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-07-30",
+      "employee_id": "e3",
+      "work_date": "2026-07-30",
+      "check_in": "2026-07-30T09:00:00.000Z",
+      "check_out": "2026-07-30T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-30T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-07-29",
+      "employee_id": "e3",
+      "work_date": "2026-07-29",
+      "check_in": "2026-07-29T09:00:00.000Z",
+      "check_out": "2026-07-29T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-29T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-07-28",
+      "employee_id": "e3",
+      "work_date": "2026-07-28",
+      "check_in": "2026-07-28T09:00:00.000Z",
+      "check_out": "2026-07-28T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-28T09:00:00.000Z"
+    },
+    {
+      "id": "att-e3-2026-07-27",
+      "employee_id": "e3",
+      "work_date": "2026-07-27",
+      "check_in": "2026-07-27T09:00:00.000Z",
+      "check_out": "2026-07-27T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-27T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-21",
+      "employee_id": "e4",
+      "work_date": "2026-08-21",
+      "check_in": "2026-08-21T09:00:00.000Z",
+      "check_out": "2026-08-21T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-21T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-20",
+      "employee_id": "e4",
+      "work_date": "2026-08-20",
+      "check_in": "2026-08-20T09:00:00.000Z",
+      "check_out": "2026-08-20T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-20T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-19",
+      "employee_id": "e4",
+      "work_date": "2026-08-19",
+      "check_in": "2026-08-19T09:00:00.000Z",
+      "check_out": "2026-08-19T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-19T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-18",
+      "employee_id": "e4",
+      "work_date": "2026-08-18",
+      "check_in": "2026-08-18T09:00:00.000Z",
+      "check_out": "2026-08-18T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-18T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-17",
+      "employee_id": "e4",
+      "work_date": "2026-08-17",
+      "check_in": "2026-08-17T09:00:00.000Z",
+      "check_out": "2026-08-17T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-17T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-14",
+      "employee_id": "e4",
+      "work_date": "2026-08-14",
+      "check_in": "2026-08-14T09:00:00.000Z",
+      "check_out": "2026-08-14T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-14T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-13",
+      "employee_id": "e4",
+      "work_date": "2026-08-13",
+      "check_in": "2026-08-13T09:00:00.000Z",
+      "check_out": "2026-08-13T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-13T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-12",
+      "employee_id": "e4",
+      "work_date": "2026-08-12",
+      "check_in": "2026-08-12T09:00:00.000Z",
+      "check_out": "2026-08-12T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-12T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-11",
+      "employee_id": "e4",
+      "work_date": "2026-08-11",
+      "check_in": "2026-08-11T09:00:00.000Z",
+      "check_out": "2026-08-11T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-11T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-10",
+      "employee_id": "e4",
+      "work_date": "2026-08-10",
+      "check_in": "2026-08-10T09:00:00.000Z",
+      "check_out": "2026-08-10T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-10T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-07",
+      "employee_id": "e4",
+      "work_date": "2026-08-07",
+      "check_in": "2026-08-07T09:00:00.000Z",
+      "check_out": "2026-08-07T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-07T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-06",
+      "employee_id": "e4",
+      "work_date": "2026-08-06",
+      "check_in": "2026-08-06T09:00:00.000Z",
+      "check_out": "2026-08-06T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-06T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-05",
+      "employee_id": "e4",
+      "work_date": "2026-08-05",
+      "check_in": "2026-08-05T09:00:00.000Z",
+      "check_out": "2026-08-05T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-05T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-04",
+      "employee_id": "e4",
+      "work_date": "2026-08-04",
+      "check_in": "2026-08-04T09:00:00.000Z",
+      "check_out": "2026-08-04T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-04T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-08-03",
+      "employee_id": "e4",
+      "work_date": "2026-08-03",
+      "check_in": "2026-08-03T09:00:00.000Z",
+      "check_out": "2026-08-03T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-08-03T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-07-31",
+      "employee_id": "e4",
+      "work_date": "2026-07-31",
+      "check_in": "2026-07-31T09:00:00.000Z",
+      "check_out": "2026-07-31T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-31T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-07-30",
+      "employee_id": "e4",
+      "work_date": "2026-07-30",
+      "check_in": "2026-07-30T09:00:00.000Z",
+      "check_out": "2026-07-30T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-30T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-07-29",
+      "employee_id": "e4",
+      "work_date": "2026-07-29",
+      "check_in": "2026-07-29T09:00:00.000Z",
+      "check_out": "2026-07-29T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-29T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-07-28",
+      "employee_id": "e4",
+      "work_date": "2026-07-28",
+      "check_in": "2026-07-28T09:00:00.000Z",
+      "check_out": "2026-07-28T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-28T09:00:00.000Z"
+    },
+    {
+      "id": "att-e4-2026-07-27",
+      "employee_id": "e4",
+      "work_date": "2026-07-27",
+      "check_in": "2026-07-27T09:00:00.000Z",
+      "check_out": "2026-07-27T18:00:00.000Z",
+      "status": "present",
+      "created_at": "2026-07-27T09:00:00.000Z"
     }
   ],
   "leave_requests": [
@@ -508,10 +857,10 @@
       "end_date": "2026-08-18",
       "remarks": "Family gathering",
       "status": "approved",
-      "created_at": "2026-08-12T11:51:51.826Z",
+      "created_at": "2026-08-12T12:20:03.226Z",
       "reviewer_id": "e1",
       "review_comment": "Approved, cover available.",
-      "reviewed_at": "2026-08-13T11:51:51.826Z"
+      "reviewed_at": "2026-08-13T12:20:03.226Z"
     },
     {
       "id": "leave-e1-2",
@@ -521,7 +870,7 @@
       "end_date": "2026-08-28",
       "remarks": "Dental checkup",
       "status": "pending",
-      "created_at": "2026-08-22T11:51:51.826Z",
+      "created_at": "2026-08-22T12:20:03.226Z",
       "reviewer_id": null,
       "review_comment": null,
       "reviewed_at": null
@@ -534,10 +883,10 @@
       "end_date": "2026-08-18",
       "remarks": "Family gathering",
       "status": "approved",
-      "created_at": "2026-08-12T11:51:51.826Z",
+      "created_at": "2026-08-12T12:20:03.226Z",
       "reviewer_id": "e1",
       "review_comment": "Approved, cover available.",
-      "reviewed_at": "2026-08-13T11:51:51.826Z"
+      "reviewed_at": "2026-08-13T12:20:03.226Z"
     },
     {
       "id": "leave-e2-2",
@@ -547,7 +896,59 @@
       "end_date": "2026-08-28",
       "remarks": "Dental checkup",
       "status": "pending",
-      "created_at": "2026-08-22T11:51:51.826Z",
+      "created_at": "2026-08-22T12:20:03.226Z",
+      "reviewer_id": null,
+      "review_comment": null,
+      "reviewed_at": null
+    },
+    {
+      "id": "leave-e3-1",
+      "employee_id": "e3",
+      "leave_type_id": "lt1",
+      "start_date": "2026-08-17",
+      "end_date": "2026-08-18",
+      "remarks": "Family gathering",
+      "status": "approved",
+      "created_at": "2026-08-12T12:20:03.226Z",
+      "reviewer_id": "e1",
+      "review_comment": "Approved, cover available.",
+      "reviewed_at": "2026-08-13T12:20:03.226Z"
+    },
+    {
+      "id": "leave-e3-2",
+      "employee_id": "e3",
+      "leave_type_id": "lt2",
+      "start_date": "2026-08-27",
+      "end_date": "2026-08-28",
+      "remarks": "Dental checkup",
+      "status": "pending",
+      "created_at": "2026-08-22T12:20:03.226Z",
+      "reviewer_id": null,
+      "review_comment": null,
+      "reviewed_at": null
+    },
+    {
+      "id": "leave-e4-1",
+      "employee_id": "e4",
+      "leave_type_id": "lt1",
+      "start_date": "2026-08-17",
+      "end_date": "2026-08-18",
+      "remarks": "Family gathering",
+      "status": "approved",
+      "created_at": "2026-08-12T12:20:03.226Z",
+      "reviewer_id": "e1",
+      "review_comment": "Approved, cover available.",
+      "reviewed_at": "2026-08-13T12:20:03.226Z"
+    },
+    {
+      "id": "leave-e4-2",
+      "employee_id": "e4",
+      "leave_type_id": "lt2",
+      "start_date": "2026-08-27",
+      "end_date": "2026-08-28",
+      "remarks": "Dental checkup",
+      "status": "pending",
+      "created_at": "2026-08-22T12:20:03.226Z",
       "reviewer_id": null,
       "review_comment": null,
       "reviewed_at": null
@@ -576,7 +977,7 @@
       "net_salary": 130000,
       "status": "pending",
       "pay_date": null,
-      "created_at": "2026-08-22T11:51:51.826Z"
+      "created_at": "2026-08-22T12:20:03.226Z"
     },
     {
       "id": "pay-e2-prev",
@@ -600,17 +1001,59 @@
       "net_salary": 86000,
       "status": "pending",
       "pay_date": null,
-      "created_at": "2026-08-22T11:51:51.826Z"
+      "created_at": "2026-08-22T12:20:03.226Z"
+    },
+    {
+      "id": "pay-e3-prev",
+      "employee_id": "e3",
+      "period": "2026-07-01",
+      "base_salary": 85000,
+      "allowances": 10000,
+      "deductions": 4000,
+      "net_salary": 91000,
+      "status": "paid",
+      "pay_date": "2026-07-28",
+      "created_at": "2026-07-24T18:30:00.000Z"
+    },
+    {
+      "id": "pay-e3-curr",
+      "employee_id": "e3",
+      "period": "2026-08-01",
+      "base_salary": 85000,
+      "allowances": 10000,
+      "deductions": 4000,
+      "net_salary": 91000,
+      "status": "pending",
+      "pay_date": null,
+      "created_at": "2026-08-22T12:20:03.227Z"
+    },
+    {
+      "id": "pay-e4-prev",
+      "employee_id": "e4",
+      "period": "2026-07-01",
+      "base_salary": 90000,
+      "allowances": 10000,
+      "deductions": 4000,
+      "net_salary": 96000,
+      "status": "paid",
+      "pay_date": "2026-07-28",
+      "created_at": "2026-07-24T18:30:00.000Z"
+    },
+    {
+      "id": "pay-e4-curr",
+      "employee_id": "e4",
+      "period": "2026-08-01",
+      "base_salary": 90000,
+      "allowances": 10000,
+      "deductions": 4000,
+      "net_salary": 96000,
+      "status": "pending",
+      "pay_date": null,
+      "created_at": "2026-08-22T12:20:03.227Z"
     }
   ],
   "documents": [],
-  "audit_logs": [
-    {
-      "id": "7431fe28-069c-4218-bf53-ef3e3cb1dcf0",
-      "action": "check_in",
-      "created_at": "2026-08-22T12:00:10.257Z"
-    }
-  ],
+  "audit_logs": [],
   "salary_configs": [
     {
       "id": "sc1",
@@ -676,6 +1119,74 @@
           "name": "Fixed Allowance",
           "type": "fixed",
           "value": 20000,
+          "calculation_base_id": null
+        }
+      ]
+    },
+    {
+      "id": "sc3",
+      "employee_id": "e3",
+      "wage_type": "monthly",
+      "wage_amount": 85000,
+      "working_days_per_week": 5,
+      "working_hours_per_day": 8,
+      "pf_rate": 12,
+      "employer_pf_rate": 12,
+      "professional_tax": 200,
+      "components": [
+        {
+          "id": "comp-e3-basic",
+          "name": "Basic Salary",
+          "type": "percentage",
+          "value": 50,
+          "calculation_base_id": "wage"
+        },
+        {
+          "id": "comp-e3-hra",
+          "name": "House Rent Allowance",
+          "type": "percentage",
+          "value": 50,
+          "calculation_base_id": "comp-e3-basic"
+        },
+        {
+          "id": "comp-e3-fixed",
+          "name": "Fixed Allowance",
+          "type": "fixed",
+          "value": 22000,
+          "calculation_base_id": null
+        }
+      ]
+    },
+    {
+      "id": "sc4",
+      "employee_id": "e4",
+      "wage_type": "monthly",
+      "wage_amount": 90000,
+      "working_days_per_week": 5,
+      "working_hours_per_day": 8,
+      "pf_rate": 12,
+      "employer_pf_rate": 12,
+      "professional_tax": 200,
+      "components": [
+        {
+          "id": "comp-e4-basic",
+          "name": "Basic Salary",
+          "type": "percentage",
+          "value": 50,
+          "calculation_base_id": "wage"
+        },
+        {
+          "id": "comp-e4-hra",
+          "name": "House Rent Allowance",
+          "type": "percentage",
+          "value": 50,
+          "calculation_base_id": "comp-e4-basic"
+        },
+        {
+          "id": "comp-e4-fixed",
+          "name": "Fixed Allowance",
+          "type": "fixed",
+          "value": 25000,
           "calculation_base_id": null
         }
       ]
