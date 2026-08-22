@@ -101,66 +101,35 @@ export const supabase = {
       return { data: { session }, error: null };
     },
     signInWithPassword: async ({ email }: { email: string; password?: string }): Promise<{ data: { user: any; session: any }; error: any }> => {
-      const client = createSupabaseClient();
-      const cleanEmail = email.trim();
+      try {
+        const { signInMock } = await import("@/lib/employees.functions");
+        const res = await signInMock({ data: { loginInput: email.trim() } });
+        if (res.error) throw new Error(res.error);
 
-      let { data: emp, error } = await client
-        .from('employees')
-        .select('*')
-        .or(`email.eq.${cleanEmail},employee_code.eq.${cleanEmail}`)
-        .maybeSingle();
+        const mockUserId = res.userId!;
+        localStorage.setItem(MOCK_USER_ID_KEY, mockUserId);
+        localStorage.setItem(MOCK_USER_EMAIL_KEY, res.email!);
 
-      if (error) return { data: { user: null, session: null }, error };
+        const user = {
+          id: mockUserId,
+          email: res.email!,
+          user_metadata: {},
+          app_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+        };
 
-      if (!emp) {
-        try {
-          const isEmail = cleanEmail.includes("@");
-          const defaultEmail = isEmail ? cleanEmail : `${cleanEmail.toLowerCase()}@gmail.com`;
-          const defaultCode = isEmail ? `DF${cleanEmail.split("@")[0]!.substring(0, 4).toUpperCase()}20260001` : cleanEmail.toUpperCase();
-          
-          const mockUserId = crypto.randomUUID();
+        const session = {
+          access_token: mockUserId,
+          token_type: 'bearer',
+          expires_in: 3600,
+          user,
+        };
 
-          const { createMockEmployeeOnFly } = await import("@/lib/employees.functions");
-          emp = await createMockEmployeeOnFly({
-            data: {
-              userId: mockUserId,
-              email: defaultEmail,
-              code: defaultCode,
-              companyId: null,
-              companyName: "Dayflow",
-              departmentId: null,
-            }
-          }) as any;
-        } catch (err) {
-          return { data: { user: null, session: null }, error: err instanceof Error ? err : new Error('Failed to auto-create user.') };
-        }
+        return { data: { user, session }, error: null };
+      } catch (err) {
+        return { data: { user: null, session: null }, error: err instanceof Error ? err : new Error('Login failed') };
       }
-
-      if (!emp) {
-        return { data: { user: null, session: null }, error: new Error('User not found in Dayflow directory.') };
-      }
-
-      const mockUserId = emp.user_id || emp.id;
-      localStorage.setItem(MOCK_USER_ID_KEY, mockUserId);
-      localStorage.setItem(MOCK_USER_EMAIL_KEY, emp.email);
-
-      const user = {
-        id: mockUserId,
-        email: emp.email,
-        user_metadata: {},
-        app_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      };
-
-      const session = {
-        access_token: mockUserId,
-        token_type: 'bearer',
-        expires_in: 3600,
-        user,
-      };
-
-      return { data: { user, session }, error: null };
     },
     signOut: async (): Promise<{ error: any }> => {
       if (typeof window !== 'undefined') {

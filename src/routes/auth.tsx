@@ -197,15 +197,15 @@ function AuthPage() {
 
           <div className="mt-4 border-t border-border/50 pt-4">
             <p className="text-xs text-muted-foreground mb-2 text-center font-display font-medium">Quick Demo Login</p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="flex-1 text-xs"
+                className="text-xs"
                 onClick={() => {
                   setLoginInput("DFAD20260001");
-                  setPassword("admin123");
+                  setPassword("password");
                 }}
               >
                 Admin User
@@ -214,13 +214,37 @@ function AuthPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="flex-1 text-xs"
+                className="text-xs"
                 onClick={() => {
                   setLoginInput("DFEM20260001");
-                  setPassword("john123");
+                  setPassword("password");
                 }}
               >
                 John Doe
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  setLoginInput("DFJOHN20260001");
+                  setPassword("password");
+                }}
+              >
+                John
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  setLoginInput("DFADMI20260001");
+                  setPassword("password");
+                }}
+              >
+                Admin
               </Button>
             </div>
           </div>
