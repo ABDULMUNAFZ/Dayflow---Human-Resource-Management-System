@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const DB_FILE = path.join(process.cwd(), 'mock_db.json');
+const IS_VERCEL = !!process.env.VERCEL;
+const BUNDLED_DB_FILE = path.join(process.cwd(), 'mock_db.json');
+const WRITEABLE_DB_FILE = IS_VERCEL ? path.join('/tmp', 'mock_db.json') : BUNDLED_DB_FILE;
 
 export interface MockDb {
   companies: any[];
@@ -192,16 +194,26 @@ function createDefaultDb(): MockDb {
 }
 
 export function getDb(): MockDb {
-  if (!fs.existsSync(DB_FILE)) {
+  if (!fs.existsSync(WRITEABLE_DB_FILE)) {
+    if (IS_VERCEL && fs.existsSync(BUNDLED_DB_FILE)) {
+      try {
+        fs.copyFileSync(BUNDLED_DB_FILE, WRITEABLE_DB_FILE);
+      } catch (e) {
+        // Fallback to programmatic creation
+      }
+    }
+  }
+
+  if (!fs.existsSync(WRITEABLE_DB_FILE)) {
     const db = createDefaultDb();
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    fs.writeFileSync(WRITEABLE_DB_FILE, JSON.stringify(db, null, 2));
     return db;
   }
   try {
-    const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    const data = JSON.parse(fs.readFileSync(WRITEABLE_DB_FILE, 'utf-8'));
     if (!data.attendance || data.attendance.length === 0) {
       const db = createDefaultDb();
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+      fs.writeFileSync(WRITEABLE_DB_FILE, JSON.stringify(db, null, 2));
       return db;
     }
     return data;
@@ -212,5 +224,5 @@ export function getDb(): MockDb {
 }
 
 export function saveDb(db: MockDb) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  fs.writeFileSync(WRITEABLE_DB_FILE, JSON.stringify(db, null, 2));
 }
