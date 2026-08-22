@@ -297,6 +297,16 @@ function createDefaultDb(): MockDb {
 }
 
 export function getDb(): MockDb {
+  if (IS_VERCEL && fs.existsSync(WRITEABLE_DB_FILE) && fs.existsSync(BUNDLED_DB_FILE)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(WRITEABLE_DB_FILE, 'utf-8'));
+      const hasAbdul = data.employees?.some((e: any) => e.full_name === 'Abdul');
+      if (!hasAbdul) {
+        fs.copyFileSync(BUNDLED_DB_FILE, WRITEABLE_DB_FILE);
+      }
+    } catch (e) {}
+  }
+
   if (!fs.existsSync(WRITEABLE_DB_FILE)) {
     if (IS_VERCEL && fs.existsSync(BUNDLED_DB_FILE)) {
       try {
