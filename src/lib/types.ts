@@ -7,6 +7,13 @@ export type PayrollStatus = "pending" | "paid";
 export type NotificationType = "info" | "success" | "warning" | "leave" | "payroll" | "attendance";
 export type DocType = "offer_letter" | "id_proof" | "certificate" | "contract" | "other";
 
+export interface Company {
+  id: string;
+  name: string;
+  prefix: string;
+  created_at: string;
+}
+
 export interface Department {
   id: string;
   name: string;
@@ -33,6 +40,9 @@ export interface Employee {
   manager_id: string | null;
   joining_date: string;
   employment_status: EmploymentStatus;
+  company_id: string | null;
+  company: string | null;
+  needs_password_change: boolean;
   created_at: string;
   updated_at: string;
   departments?: { name: string } | null;
@@ -42,6 +52,8 @@ export interface Employee {
 export interface EmployeeWithToday extends Employee {
   today_status: AttendanceStatus | null;
   today_check_in: string | null;
+  today_check_out?: string | null;
+  work_status: "present" | "on_leave" | "absent";
 }
 
 export interface Attendance {

@@ -82,6 +82,27 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          prefix: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          prefix: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          prefix?: string
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           created_at: string
@@ -142,6 +163,9 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
+          company_id: string | null
+          company: string | null
+          needs_password_change: boolean
           created_at: string
           department_id: string | null
           email: string
@@ -159,6 +183,9 @@ export type Database = {
         Insert: {
           address?: string | null
           avatar_url?: string | null
+          company_id?: string | null
+          company?: string | null
+          needs_password_change?: boolean
           created_at?: string
           department_id?: string | null
           email: string
@@ -176,6 +203,9 @@ export type Database = {
         Update: {
           address?: string | null
           avatar_url?: string | null
+          company_id?: string | null
+          company?: string | null
+          needs_password_change?: boolean
           created_at?: string
           department_id?: string | null
           email?: string
@@ -191,6 +221,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "employees_department_id_fkey"
             columns: ["department_id"]

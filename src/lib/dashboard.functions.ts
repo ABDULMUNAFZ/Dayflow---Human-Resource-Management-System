@@ -17,38 +17,28 @@ export interface AdminDashboardData {
 
 export const getAdminDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AdminDashboardData> => {
-    const { supabase } = context;
+  .handler(async (): Promise<AdminDashboardData> => {
+    const { getDb } = await import("./mock-db");
+    const db = getDb();
+    
     const today = new Date().toISOString().slice(0, 10);
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-    const now = new Date();
-    const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
-    const [emps, todayAtt, att30, pending, payroll, recent] = await Promise.all([
-      supabase.from("employees").select("id, department_id, departments(name)"),
-      supabase.from("attendance").select("status").eq("work_date", today),
-      supabase.from("attendance").select("work_date, status").gte("work_date", since30),
-      supabase
-        .from("leave_requests")
-        .select("id", { count: "exact" })
-        .eq("status", "pending"),
-      supabase.from("payroll").select("net_salary").eq("period", period),
-      supabase
-        .from("leave_requests")
-        .select("*, leave_types(name), employees(full_name, employee_code, job_title, avatar_url)")
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
+    const employees = db.employees;
+    const todayAtt = db.attendance.filter((a) => a.work_date === today);
+    const att30 = db.attendance.filter((a) => a.work_date >= since30);
+    
+    const pending = db.leave_requests.filter((l) => l.status === "pending");
+    const payroll = db.payroll;
+    const recent = db.leave_requests.slice(-5);
 
-    const todayRows = todayAtt.data ?? [];
-    const att = att30.data ?? [];
-    const present = att.filter((a) => a.status === "present").length;
-    const absent = att.filter((a) => a.status === "absent").length;
-    const half = att.filter((a) => a.status === "half_day").length;
+    const present = att30.filter((a) => a.status === "present").length;
+    const absent = att30.filter((a) => a.status === "absent").length;
+    const half = att30.filter((a) => a.status === "half_day").length;
     const rate = present + absent + half > 0 ? ((present + half * 0.5) / (present + absent + half)) * 100 : 0;
 
     const byDate = new Map<string, number>();
-    for (const a of att) {
+    for (const a of att30) {
       if (a.status === "present" || a.status === "half_day") {
         byDate.set(a.work_date, (byDate.get(a.work_date) ?? 0) + 1);
       }
@@ -59,21 +49,37 @@ export const getAdminDashboard = createServerFn({ method: "GET" })
       .map(([date, p]) => ({ date, present: p }));
 
     const deptCounts = new Map<string, number>();
-    for (const e of emps.data ?? []) {
-      const name = (e.departments as unknown as { name: string } | null)?.name ?? "Unassigned";
+    for (const e of employees) {
+      const dept = db.departments.find((d) => d.id === e.department_id);
+      const name = dept?.name || "Unassigned";
       deptCounts.set(name, (deptCounts.get(name) ?? 0) + 1);
     }
 
+    const mappedRequests = recent.map((r) => {
+      const emp = db.employees.find((e) => e.id === r.employee_id);
+      const type = db.leave_types.find((t) => t.id === r.leave_type_id);
+      return {
+        ...r,
+        leave_types: type ? { name: type.name } : null,
+        employees: emp ? {
+          full_name: emp.full_name,
+          employee_code: emp.employee_code,
+          job_title: emp.job_title,
+          avatar_url: emp.avatar_url,
+        } : null,
+      };
+    }) as any;
+
     return {
-      totalEmployees: (emps.data ?? []).length,
-      presentToday: todayRows.filter((a) => a.status === "present" || a.status === "half_day").length,
-      absentToday: todayRows.filter((a) => a.status === "absent").length,
-      onLeaveToday: todayRows.filter((a) => a.status === "leave").length,
-      pendingRequests: pending.count ?? 0,
-      payrollTotal: (payroll.data ?? []).reduce((s, p) => s + Number(p.net_salary), 0),
+      totalEmployees: employees.length,
+      presentToday: todayAtt.filter((a) => a.status === "present" || a.status === "half_day").length,
+      absentToday: todayAtt.filter((a) => a.status === "absent").length,
+      onLeaveToday: todayAtt.filter((a) => a.status === "leave").length,
+      pendingRequests: pending.length,
+      payrollTotal: payroll.reduce((s, p) => s + Number(p.net_salary || 0), 0),
       attendanceRate: Math.round(rate * 10) / 10,
       trend,
-      recentRequests: (recent.data ?? []) as unknown as LeaveRequest[],
+      recentRequests: mappedRequests,
       departmentMix: [...deptCounts.entries()].map(([name, count]) => ({ name, count })),
     };
   });
@@ -89,39 +95,19 @@ export interface ActivityItem {
 export const getMyActivity = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ActivityItem[]> => {
-    const { supabase, userId } = context;
-    const { data: emp } = await supabase.from("employees").select("id").eq("user_id", userId).maybeSingle();
+    const { userId } = context;
+    const { getDb } = await import("./mock-db");
+    const db = getDb();
+
+    const emp = db.employees.find((e) => e.user_id === userId);
     if (!emp) return [];
 
-    const [att, leave, pay, notifs] = await Promise.all([
-      supabase
-        .from("attendance")
-        .select("*")
-        .eq("employee_id", emp.id)
-        .order("work_date", { ascending: false })
-        .limit(5),
-      supabase
-        .from("leave_requests")
-        .select("*, leave_types(name)")
-        .eq("employee_id", emp.id)
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("payroll")
-        .select("*")
-        .eq("employee_id", emp.id)
-        .order("period", { ascending: false })
-        .limit(2),
-      supabase
-        .from("notifications")
-        .select("*")
-        .eq("employee_id", emp.id)
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
+    const att = db.attendance.filter((a) => a.employee_id === emp.id).slice(-5);
+    const leave = db.leave_requests.filter((l) => l.employee_id === emp.id).slice(-5);
+    const pay = db.payroll.filter((p) => p.employee_id === emp.id).slice(-2);
 
     const items: ActivityItem[] = [];
-    for (const a of (att.data ?? []) as Attendance[]) {
+    for (const a of att) {
       if (a.check_in) {
         items.push({
           id: `att-${a.id}`,
@@ -132,7 +118,8 @@ export const getMyActivity = createServerFn({ method: "GET" })
         });
       }
     }
-    for (const l of (leave.data ?? []) as unknown as LeaveRequest[]) {
+    for (const l of leave) {
+      const type = db.leave_types.find((t) => t.id === l.leave_type_id);
       items.push({
         id: `leave-${l.id}`,
         kind: "leave",
@@ -140,11 +127,11 @@ export const getMyActivity = createServerFn({ method: "GET" })
           l.status === "pending"
             ? "Leave request submitted"
             : `Leave ${l.status}`,
-        detail: `${l.leave_types?.name ?? "Leave"} · ${l.start_date} → ${l.end_date}`,
+        detail: `${type?.name ?? "Leave"} · ${l.start_date} → ${l.end_date}`,
         at: l.reviewed_at ?? l.created_at,
       });
     }
-    for (const p of (pay.data ?? []) as Payroll[]) {
+    for (const p of pay) {
       items.push({
         id: `pay-${p.id}`,
         kind: "payroll",
@@ -152,9 +139,6 @@ export const getMyActivity = createServerFn({ method: "GET" })
         detail: `Period ${p.period}`,
         at: p.pay_date ? `${p.pay_date}T00:00:00` : `${p.period}T00:00:00`,
       });
-    }
-    for (const n of (notifs.data ?? []) as AppNotification[]) {
-      items.push({ id: `ntf-${n.id}`, kind: "notification", title: n.title, detail: n.message, at: n.created_at });
     }
 
     return items.sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 10);

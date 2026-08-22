@@ -83,7 +83,7 @@ function Landing() {
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+    supabase.auth.getUser().then(({ data }: any) => setAuthed(!!data?.user));
   }, []);
 
   return (

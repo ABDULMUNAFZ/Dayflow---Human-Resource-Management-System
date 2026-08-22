@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Attendance, LeaveRequest, Payroll } from "@/lib/types";
 
 export interface AnalyticsData {
   workforce: {
@@ -35,31 +34,22 @@ export interface AnalyticsData {
 
 export const getAnalytics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AnalyticsData> => {
-    const { supabase } = context;
+  .handler(async (): Promise<AnalyticsData> => {
+    const { getDb } = await import("./mock-db");
+    const db = getDb();
+
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
     const yearStart = `${new Date().getFullYear()}-01-01`;
 
-    const [{ data: employees }, { data: attendance }, { data: leaves }, { data: payroll }, { data: departments }] =
-      await Promise.all([
-        supabase.from("employees").select("id, department_id, employment_status, joining_date, created_at"),
-        supabase.from("attendance").select("work_date, status").gte("work_date", since30),
-        supabase.from("leave_requests").select("status, start_date, end_date, leave_types(name)").gte("start_date", yearStart),
-        supabase.from("payroll").select("period, net_salary, status"),
-        supabase.from("departments").select("id, name"),
-      ]);
+    const emps = db.employees || [];
+    const att = db.attendance.filter((a) => a.work_date >= since30);
+    const lv = db.leave_requests.filter((l) => l.start_date >= yearStart);
+    const pay = db.payroll || [];
 
-    const emps = employees ?? [];
-    const att = (attendance ?? []) as Pick<Attendance, "work_date" | "status">[];
-    const lv = (leaves ?? []) as unknown as (Pick<LeaveRequest, "status" | "start_date" | "end_date"> & {
-      leave_types: { name: string } | null;
-    })[];
-    const pay = (payroll ?? []) as Pick<Payroll, "period" | "net_salary" | "status">[];
-
-    const deptName = new Map((departments ?? []).map((d) => [d.id, d.name]));
     const deptCounts = new Map<string, number>();
     for (const e of emps) {
-      const name = (e.department_id && deptName.get(e.department_id)) || "Unassigned";
+      const dept = db.departments.find((d) => d.id === e.department_id);
+      const name = dept?.name || "Unassigned";
       deptCounts.set(name, (deptCounts.get(name) ?? 0) + 1);
     }
 
@@ -85,22 +75,24 @@ export const getAnalytics = createServerFn({ method: "GET" })
     const typeDays = new Map<string, number>();
     for (const r of lv.filter((x) => x.status === "approved")) {
       const days = Math.round((new Date(`${r.end_date}T00:00:00`).getTime() - new Date(`${r.start_date}T00:00:00`).getTime()) / 86400000) + 1;
-      const name = r.leave_types?.name ?? "Other";
+      const type = db.leave_types.find((t) => t.id === r.leave_type_id);
+      const name = type?.name || "Other";
       typeDays.set(name, (typeDays.get(name) ?? 0) + days);
     }
 
     const periods = [...new Set(pay.map((p) => p.period))].sort().reverse();
-    const currentPeriod = periods[0];
-    const previousPeriod = periods[1];
+    const currentPeriod = periods[0] || new Date().toISOString().slice(0, 7) + "-01";
+    const previousPeriod = periods[1] || "";
     const currentRows = pay.filter((p) => p.period === currentPeriod);
     const prevRows = pay.filter((p) => p.period === previousPeriod);
-    const currentTotal = currentRows.reduce((s, p) => s + Number(p.net_salary), 0);
+    const currentTotal = currentRows.reduce((s, p) => s + Number(p.net_salary || 0), 0);
+    
     const monthlyTotals = periods
       .slice(0, 6)
       .reverse()
       .map((period) => ({
         period,
-        total: pay.filter((p) => p.period === period).reduce((s, p) => s + Number(p.net_salary), 0),
+        total: pay.filter((p) => p.period === period).reduce((s, p) => s + Number(p.net_salary || 0), 0),
       }));
 
     const buckets = [
@@ -110,7 +102,7 @@ export const getAnalytics = createServerFn({ method: "GET" })
       { bucket: "₹180K+", min: 180000, max: Infinity },
     ].map((b) => ({
       bucket: b.bucket,
-      count: currentRows.filter((p) => Number(p.net_salary) >= b.min && Number(p.net_salary) < b.max).length,
+      count: currentRows.filter((p) => Number(p.net_salary || 0) >= b.min && Number(p.net_salary || 0) < b.max).length,
     }));
 
     return {
@@ -137,7 +129,7 @@ export const getAnalytics = createServerFn({ method: "GET" })
       },
       payroll: {
         currentMonthTotal: currentTotal,
-        previousMonthTotal: prevRows.reduce((s, p) => s + Number(p.net_salary), 0),
+        previousMonthTotal: prevRows.reduce((s, p) => s + Number(p.net_salary || 0), 0),
         averageNet: currentRows.length ? Math.round(currentTotal / currentRows.length) : 0,
         distribution: buckets,
         monthlyTotals,

@@ -6,42 +6,49 @@ import type { AppNotification } from "@/lib/types";
 export const getMyNotifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ notifications: AppNotification[]; unread: number }> => {
-    const { supabase, userId } = context;
-    const { data: emp } = await supabase.from("employees").select("id").eq("user_id", userId).maybeSingle();
+    const { userId } = context;
+    const { getDb } = await import("./mock-db");
+    const db = getDb();
+
+    const emp = db.employees.find((e) => e.user_id === userId);
     if (!emp) return { notifications: [], unread: 0 };
 
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("employee_id", emp.id)
-      .order("created_at", { ascending: false })
-      .limit(60);
+    const list = db.documents.filter((n) => n.employee_id === emp.id) as any[]; // mock using documents or simple array
+    const unread = list.filter((n) => !n.read).length;
 
-    const list = (data ?? []) as AppNotification[];
-    return { notifications: list, unread: list.filter((n) => !n.read).length };
+    return { notifications: list, unread };
   });
 
 export const markNotificationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
-  .handler(async ({ context, data }): Promise<{ ok: true }> => {
-    const { supabase } = context;
-    const { error } = await supabase.from("notifications").update({ read: true }).eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .inputValidator((data) => z.object({ id: z.string() }).parse(data))
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+    const item = db.documents.find((n) => n.id === data.id);
+    if (item) {
+      item.read = true;
+      saveDb(db);
+    }
     return { ok: true };
   });
 
 export const markAllNotificationsRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ ok: true }> => {
-    const { supabase, userId } = context;
-    const { data: emp } = await supabase.from("employees").select("id").eq("user_id", userId).maybeSingle();
+    const { userId } = context;
+    const { getDb, saveDb } = await import("./mock-db");
+    const db = getDb();
+
+    const emp = db.employees.find((e) => e.user_id === userId);
     if (!emp) return { ok: true };
-    const { error } = await supabase
-      .from("notifications")
-      .update({ read: true })
-      .eq("employee_id", emp.id)
-      .eq("read", false);
-    if (error) throw new Error(error.message);
+
+    db.documents.forEach((n) => {
+      if (n.employee_id === emp.id) {
+        n.read = true;
+      }
+    });
+
+    saveDb(db);
     return { ok: true };
   });

@@ -1,16 +1,13 @@
 import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sun, ArrowLeft, Loader2 } from "lucide-react";
+import { Sun, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search): { redirect?: string | undefined } => ({ redirect: (search["redirect"] as string) || undefined }),
@@ -59,9 +56,10 @@ function AuthPage() {
   const search = Route.useSearch();
   const redirectTo = search["redirect"];
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState<null | "in" | "up" | "google">(null);
+  const [loading, setLoading] = useState<null | "in" | "google">(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const afterAuth = () => {
     const safe = redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/dashboard";
@@ -70,53 +68,56 @@ function AuthPage() {
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!z.string().email().safeParse(email).success || password.length < 6) {
-      toast.error("Enter a valid email and a password of at least 6 characters.");
+    if (loginInput.trim() === "" || password.length < 6) {
+      toast.error("Enter a valid Login ID/email and a password of at least 6 characters.");
       return;
     }
     setLoading("in");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(null);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Welcome back.");
-    afterAuth();
-  };
+    
+    try {
+      let emailToUse = loginInput.trim();
+      
+      // If it doesn't contain '@', it is a Login ID. Resolve it to an email!
+      if (!emailToUse.includes("@")) {
+        const { resolveLoginId } = await import("@/lib/employees.functions");
+        const { email: resolvedEmail } = await resolveLoginId({ data: { loginId: emailToUse } });
+        if (!resolvedEmail) {
+          throw new Error("Invalid Login ID or email.");
+        }
+        emailToUse = resolvedEmail;
+      }
 
-  const signUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!z.string().email().safeParse(email).success || password.length < 6) {
-      toast.error("Enter a valid email and a password of at least 6 characters.");
-      return;
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast.success("Welcome back.");
+      afterAuth();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setLoading(null);
     }
-    setLoading("up");
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin + "/auth" },
-    });
-    setLoading(null);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Account created. Check your email to confirm, then sign in.");
   };
 
   const google = async () => {
     setLoading("google");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/auth",
+      },
     });
-    if (result.error) {
+    if (error) {
       setLoading(null);
-      toast.error("Google sign-in failed. Try again.");
+      toast.error(error.message);
       return;
     }
-    if (result.redirected) return;
-    afterAuth();
   };
 
   return (
@@ -144,58 +145,89 @@ function AuthPage() {
             </div>
           </div>
 
-          <Button variant="outline" className="w-full gap-2" onClick={google} disabled={loading !== null}>
-            {loading === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-            Continue with Google
-          </Button>
+          <form onSubmit={signIn} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="login-input">Login ID or Email</Label>
+              <Input
+                id="login-input"
+                type="text"
+                placeholder="OIJODO20220001 or you@company.com"
+                value={loginInput}
+                onChange={(e) => setLoginInput(e.target.value)}
+                required
+                className="bg-secondary"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password-in">Password</Label>
+                <button
+                  type="button"
+                  onClick={() => toast.info("Contact your HR administrator to reset your password.")}
+                  className="text-xs text-accent hover:underline bg-transparent border-none p-0 cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password-in"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="bg-secondary pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading !== null}>
+              {loading === "in" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign in
+            </Button>
+          </form>
 
-          <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or with email
-            <span className="h-px flex-1 bg-border" />
+          <div className="mt-4 border-t border-border/50 pt-4">
+            <p className="text-xs text-muted-foreground mb-2 text-center font-display font-medium">Quick Demo Login</p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs"
+                onClick={() => {
+                  setLoginInput("DFAD20260001");
+                  setPassword("admin123");
+                }}
+              >
+                Admin User
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs"
+                onClick={() => {
+                  setLoginInput("DFEM20260001");
+                  setPassword("john123");
+                }}
+              >
+                John Doe
+              </Button>
+            </div>
           </div>
 
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin">
-              <form onSubmit={signIn} className="mt-4 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email-in">Work email</Label>
-                  <Input id="email-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password-in">Password</Label>
-                  <Input id="password-in" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-                </div>
-                <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading !== null}>
-                  {loading === "in" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign in
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="signup">
-              <form onSubmit={signUp} className="mt-4 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email-up">Work email</Label>
-                  <Input id="email-up" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password-up">Password</Label>
-                  <Input id="password-up" type="password" placeholder="At least 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-                </div>
-                <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading !== null}>
-                  {loading === "up" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create account
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  New accounts start with employee access. An admin can promote you.
-                </p>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <p className="mt-6 text-center text-xs text-muted-foreground border-t border-border pt-4">
+            Employee accounts are created by your HR administrator.
+          </p>
         </div>
       </motion.div>
     </div>

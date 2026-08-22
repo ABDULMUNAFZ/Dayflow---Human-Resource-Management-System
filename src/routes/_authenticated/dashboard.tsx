@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, BarChart3, CalendarOff, Clock, LogIn, LogOut, Users, Wallet } from "lucide-react";
+import { ArrowRight, BarChart3, CalendarOff, Clock, LogIn, LogOut, Users, Wallet, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,17 +37,35 @@ function useMyAttendance() {
 function CheckInCard() {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [checkingState, setCheckingState] = useState<"idle" | "checking" | "success">("idle");
   const { data, isLoading } = useMyAttendance();
 
   const today = data?.today;
   const checkedIn = !!today?.check_in;
   const checkedOut = !!today?.check_out;
 
-  const act = async (fn: () => Promise<unknown>, message: string) => {
+  const handleCheckIn = async () => {
+    setBusy(true);
+    setCheckingState("checking");
+    try {
+      await checkIn({ data: { date: todayISO() } });
+      setCheckingState("success");
+      toast.success("Checked in. Let's make it a good one.");
+      await queryClient.invalidateQueries({ queryKey: ["my-attendance"] });
+      setTimeout(() => setCheckingState("idle"), 2000);
+    } catch (e) {
+      setCheckingState("idle");
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCheckOut = async () => {
     setBusy(true);
     try {
-      await fn();
-      toast.success(message);
+      await checkOut({ data: { date: todayISO() } });
+      toast.success("Checked out. Great work today.");
       await queryClient.invalidateQueries({ queryKey: ["my-attendance"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -94,7 +112,7 @@ function CheckInCard() {
               </p>
             ) : checkedIn ? (
               <Button
-                onClick={() => act(() => checkOut({ data: { date: todayISO() } }), "Checked out. Great work today.")}
+                onClick={handleCheckOut}
                 disabled={busy}
                 className="w-full bg-accent text-accent-foreground shadow-glow hover:bg-accent/90"
               >
@@ -102,11 +120,21 @@ function CheckInCard() {
               </Button>
             ) : (
               <Button
-                onClick={() => act(() => checkIn({ data: { date: todayISO() } }), "Checked in. Let's make it a good one.")}
-                disabled={busy}
+                onClick={handleCheckIn}
+                disabled={busy || checkingState !== "idle"}
                 className="w-full bg-accent text-accent-foreground shadow-glow hover:bg-accent/90"
               >
-                <LogIn className="mr-2 h-4 w-4" /> Check in
+                {checkingState === "checking" ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking...
+                  </>
+                ) : checkingState === "success" ? (
+                  "✓ Working"
+                ) : (
+                  <>
+                    <LogIn className="mr-2 h-4 w-4" /> Check in
+                  </>
+                )}
               </Button>
             )}
           </>
