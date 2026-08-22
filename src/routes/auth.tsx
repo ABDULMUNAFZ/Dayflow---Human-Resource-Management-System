@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search) => ({ redirect: (search["redirect"] as string) || undefined }),
+  validateSearch: (search): { redirect?: string | undefined } => ({ redirect: (search["redirect"] as string) || undefined }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
     if (data.user) throw redirect({ to: "/dashboard" });

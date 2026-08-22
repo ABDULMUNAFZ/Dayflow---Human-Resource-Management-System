@@ -89,7 +89,7 @@ export const getReport = createServerFn({ method: "GET" })
         headers: ["Employee", "Code", "Period", "Base", "Allowances", "Deductions", "Net", "Status"],
         rows: (rows ?? []).map((r) => {
           const e = r.employees as unknown as { full_name: string; employee_code: string } | null;
-          return [e?.full_name ?? "", e?.employee_code ?? "", r.period, r.base_salary, r.allowances, r.deductions, r.net_salary, r.status];
+          return [e?.full_name ?? "", e?.employee_code ?? "", r.period ?? "", r.base_salary ?? 0, r.allowances ?? 0, r.deductions ?? 0, r.net_salary ?? 0, r.status ?? ""];
         }),
         generatedAt,
       };

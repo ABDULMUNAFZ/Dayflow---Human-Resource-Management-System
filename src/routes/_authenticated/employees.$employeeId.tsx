@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession } from "@/hooks/use-session";
-import { addDocument, deleteDocument, getEmployeeDetail, updateEmployee, type EmployeeDetail } from "@/lib/employees.functions";
+import { addDocument, deleteDocument, getEmployeeDetail, getEmployees, updateEmployee, type EmployeeDetail } from "@/lib/employees.functions";
 import { getOrgMeta } from "@/lib/org.functions";
 import { formatCurrency, formatDuration, formatTime, workDurationMs } from "@/lib/format";
 import type { Employee } from "@/lib/types";

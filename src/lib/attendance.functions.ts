@@ -13,7 +13,7 @@ export const getMyAttendance = createServerFn({ method: "GET" })
     const { data: emp } = await supabase.from("employees").select("id").eq("user_id", userId).maybeSingle();
     if (!emp) return { rows: [], today: null };
 
-    const [year, month] = data.month.split("-").map(Number);
+    const [year = 1970, month = 1] = data.month.split("-").map(Number);
     const from = `${data.month}-01`;
     const to = new Date(year, month, 0).toISOString().slice(0, 10);
     const todayStr = new Date().toISOString().slice(0, 10);
